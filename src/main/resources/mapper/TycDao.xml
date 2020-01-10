@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qy.dao.TycDao">
+    <select id="queryParks" resultType="com.qy.entity.ParkEntity">
+        select 1 pkey,1 crkbh,1 fxlx,CONVERT(varchar(100),InTime,20) txsj,'02' hpzl,InDeviceName tcwz,CarNo hphm,InPictureFile tplj,2 hpys,0 scbj
+        from jsst.tc.record
+        where substring(CONVERT(varchar(100),InTime,20),0,17) in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        and InDeviceEntryType<![CDATA[ <> ]]>0
+        union
+        select 1 pkey,1 crkbh,2 fxlx,CONVERT(varchar(100),OutTime,20) txsj,'02' hpzl,OutDeviceName tcwz,CarNo hphm,OutPictureFile tplj,2 hpys,0 scbj
+        from jsst.tc.record
+        where substring(CONVERT(varchar(100),OutTime,20),0,17) in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+            #{item}
+        </foreach>
+       and OutDeviceEntryType<![CDATA[ <> ]]>0
+    </select>
+</mapper>

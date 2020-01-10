@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qy.dao.WjqtDao">
+    <select id="queryParks" resultType="com.qy.entity.ParkEntity">
+        select 1 pkey,1 crkbh,plate hphm,1 fxlx,DATE_FORMAT(in_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,in_img tplj,2 hpys,0 scbj
+        from b_out_in_record
+        where DATE_FORMAT(in_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        union
+        select 1 pkey,1 crkbh,plate hphm,2 fxlx,DATE_FORMAT(out_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,out_img tplj,2 hpys,0 scbj
+        from b_out_in_record
+        where DATE_FORMAT(out_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+        #{item}
+        </foreach>
+    </select>
+</mapper>

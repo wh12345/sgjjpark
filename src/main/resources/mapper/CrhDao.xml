@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qy.dao.CrhDao">
+    <select id="queryParks" resultType="com.qy.entity.ParkEntity">
+        select 1 pkey,1 crkbh,enter_plate_cn hphm,2 fxlx,date_format(out_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,out_picture_name tplj,2 hpys,0 scbj
+        from t_parkcarout
+        where date_format(out_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        UNION
+        select 1 pkey,1 crkbh,plate_cn hphm,1 fxlx,date_format(enter_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,picture_name tplj,2 hpys,0 scbj
+        from t_parkcarenter
+        where date_format(enter_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+        #{item}
+        </foreach>
+    </select>
+</mapper>

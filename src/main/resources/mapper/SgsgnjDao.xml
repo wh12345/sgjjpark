@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qy.dao.SgsgnjDao">
+    <select id="queryParks" resultType="com.qy.entity.ParkEntity">
+        select 1 pkey,1 crkbh,feeseason fxlx,CONVERT(varchar(100),acctime,20) txsj,'02' hpzl,carno hphm,2 hpys,0 scbj
+        from SmartCard.dbo.CPraccrecord
+        where substring(CONVERT(varchar(100),acctime,20),0,17) in 
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+        #{item}
+        </foreach>
+        and carno is not null
+        union
+        select 1 pkey,1 crkbh,feeseason fxlx,CONVERT(varchar(100),acctime,20) txsj,'02' hpzl,carno hphm,2 hpys,0 scbj
+        from  SmartCard.dbo.CPraccrecord
+        where substring(CONVERT(varchar(100),acctime,20),0,17) in 
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+        #{item}
+        </foreach>
+        and carno is not null
+    </select>
+</mapper>

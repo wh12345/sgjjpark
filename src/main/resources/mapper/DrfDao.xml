@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qy.dao.DrfDao">
+    <select id="queryParks" resultType="com.qy.entity.ParkEntity">
+        select 1 pkey,1 crkbh,enter_car_license_number hphm,2 fxlx,date_format(enter_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,enter_car_full_picture tplj,2 hpys,0 scbj
+        from tb_record_car
+        where date_format(enter_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        UNION
+        select 1 pkey,1 crkbh,leave_car_license_number hphm,1 fxlx,date_format(leave_time,'%Y-%m-%d %H:%i:%s') txsj,'02' hpzl,leave_car_full_picture tplj,2 hpys,0 scbj
+        from tb_record_car
+        where date_format(leave_time,'%Y-%m-%d %H:%i') in
+        <foreach collection='dates' item='item' index='index' separator="," open="(" close=")">
+        #{item}
+        </foreach>
+    </select>
+</mapper>
