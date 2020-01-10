@@ -1,0 +1,254 @@
+CREATE TABLE qrtz_job_details (
+  SCHED_NAME varchar2(120) NOT NULL,
+  JOB_NAME varchar2(200) NOT NULL,
+  JOB_GROUP varchar2(200) NOT NULL,
+  DESCRIPTION varchar2(250) DEFAULT NULL,
+  JOB_CLASS_NAME varchar2(250) NOT NULL,
+  IS_DURABLE varchar2(1) NOT NULL,
+  IS_NONCONCURRENT varchar2(1) NOT NULL,
+  IS_UPDATE_DATA varchar2(1) NOT NULL,
+  REQUESTS_RECOVERY varchar2(1) NOT NULL,
+  JOB_DATA blob,
+  PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
+)
+CREATE INDEX IDX_QRTZ_J_REQ_RECOVERY ON qrtz_job_details(SCHED_NAME,REQUESTS_RECOVERY);
+CREATE INDEX IDX_QRTZ_J_GRP ON qrtz_job_details(SCHED_NAME,JOB_GROUP);
+INSERT INTO qrtz_job_details VALUES ('RenrenScheduler', 'TASK_1', 'DEFAULT', null, 'com.hq.modules.job.utils.ScheduleJob', '0', '0', '0', '0',null);
+INSERT INTO qrtz_job_details VALUES ('RenrenScheduler', 'TASK_2', 'DEFAULT', null, 'com.hq.modules.job.utils.ScheduleJob', '0', '0', '0', '0', null);
+
+
+CREATE TABLE qrtz_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  JOB_NAME varchar2(200) NOT NULL,
+  JOB_GROUP varchar2(200) NOT NULL,
+  DESCRIPTION varchar2(250) DEFAULT NULL,
+  NEXT_FIRE_TIME number(13) DEFAULT NULL,
+  PREV_FIRE_TIME number(13) DEFAULT NULL,
+  PRIORITY int DEFAULT NULL,
+  TRIGGER_STATE varchar2(16) NOT NULL,
+  TRIGGER_TYPE varchar2(8) NOT NULL,
+  START_TIME number(13) NOT NULL,
+  END_TIME number(13) DEFAULT NULL,
+  CALENDAR_NAME varchar2(200) DEFAULT NULL,
+  MISFIRE_INSTR number(5) DEFAULT NULL,
+  JOB_DATA blob,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+  CONSTRAINT qrtz_triggers_ibfk_1 FOREIGN KEY (SCHED_NAME, JOB_NAME, JOB_GROUP) REFERENCES qrtz_job_details (SCHED_NAME, JOB_NAME, JOB_GROUP)
+) 
+
+
+CREATE INDEX IDX_QRTZ_T_J on qrtz_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP);
+CREATE INDEX IDX_QRTZ_T_JG on qrtz_triggers(SCHED_NAME,JOB_GROUP);
+CREATE INDEX IDX_QRTZ_T_C on qrtz_triggers(SCHED_NAME,CALENDAR_NAME);
+CREATE INDEX IDX_QRTZ_T_G on qrtz_triggers(SCHED_NAME,TRIGGER_GROUP);
+CREATE INDEX IDX_QRTZ_T_STATE on qrtz_triggers(SCHED_NAME,TRIGGER_STATE);
+CREATE INDEX IDX_QRTZ_T_N_STATE on qrtz_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP,TRIGGER_STATE);
+CREATE INDEX IDX_QRTZ_T_N_G_STATE on qrtz_triggers(SCHED_NAME,TRIGGER_GROUP,TRIGGER_STATE);
+CREATE INDEX IDX_QRTZ_T_NEXT_FIRE_TIME on qrtz_triggers(SCHED_NAME,NEXT_FIRE_TIME);
+CREATE INDEX IDX_QRTZ_T_NFT_ST on qrtz_triggers(SCHED_NAME,TRIGGER_STATE,NEXT_FIRE_TIME);
+CREATE INDEX IDX_QRTZ_T_NFT_MISFIRE on qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME);
+CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE on qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_STATE);
+CREATE INDEX IDX_QRTZ_T_NFT_ST_MISFIRE_GRP on qrtz_triggers(SCHED_NAME,MISFIRE_INSTR,NEXT_FIRE_TIME,TRIGGER_GROUP,TRIGGER_STATE);
+
+
+INSERT INTO qrtz_triggers VALUES ('RenrenScheduler', 'TASK_1', 'DEFAULT', 'TASK_1', 'DEFAULT', null, '1544608800000', '1544607000000', '5', 'WAITING', 'CRON', '1544499149000', '0', null, '2',null);
+INSERT INTO qrtz_triggers VALUES ('RenrenScheduler', 'TASK_2', 'DEFAULT', 'TASK_2', 'DEFAULT', null, '1544500800000', '-1', '5', 'PAUSED', 'CRON', '1544499149000', '0', null, '2',null);
+
+
+CREATE TABLE qrtz_blob_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  BLOB_DATA blob,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+  CONSTRAINT qrtz_blob_triggers_ibfk_1 FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers(SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+)
+create index SCHED_NAME on qrtz_blob_triggers(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP);
+
+
+CREATE TABLE qrtz_calendars (
+  SCHED_NAME varchar2(120) NOT NULL,
+  CALENDAR_NAME varchar2(200) NOT NULL,
+  CALENDAR blob NOT NULL,
+  PRIMARY KEY (SCHED_NAME,CALENDAR_NAME)
+)
+
+
+CREATE TABLE qrtz_cron_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  CRON_EXPRESSION varchar2(120) NOT NULL,
+  TIME_ZONE_ID varchar2(80) DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+  CONSTRAINT qrtz_cron_triggers_ibfk_1 FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+)
+
+INSERT INTO qrtz_cron_triggers VALUES ('RenrenScheduler', 'TASK_1', 'DEFAULT', '0 0/30 * * * ?', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('RenrenScheduler', 'TASK_2', 'DEFAULT', '0 0/30 * * * ?', 'Asia/Shanghai');
+
+CREATE TABLE qrtz_fired_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  ENTRY_ID varchar2(95) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  INSTANCE_NAME varchar2(200) NOT NULL,
+  FIRED_TIME number(13) NOT NULL,
+  SCHED_TIME number(13) NOT NULL,
+  PRIORITY number(11) NOT NULL,
+  STATE varchar2(16) NOT NULL,
+  JOB_NAME varchar2(200) DEFAULT NULL,
+  JOB_GROUP varchar2(200) DEFAULT NULL,
+  IS_NONCONCURRENT varchar2(1) DEFAULT NULL,
+  REQUESTS_RECOVERY varchar2(1) DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME,ENTRY_ID)
+)
+ create index IDX_QRTZ_FT_TRIG_INST_NAME on qrtz_fired_triggers(SCHED_NAME,INSTANCE_NAME);
+  create index IDX_QRTZ_FT_INST_JOB_REQ_RCVRY on qrtz_fired_triggers (SCHED_NAME,INSTANCE_NAME,REQUESTS_RECOVERY);
+  create index IDX_QRTZ_FT_J_G on qrtz_fired_triggers(SCHED_NAME,JOB_NAME,JOB_GROUP);
+  create index IDX_QRTZ_FT_JG on qrtz_fired_triggers(SCHED_NAME,JOB_GROUP);
+  create index IDX_QRTZ_FT_T_G on qrtz_fired_triggers (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP);
+  create index IDX_QRTZ_FT_TG on qrtz_fired_triggers (SCHED_NAME,TRIGGER_GROUP);
+  
+  
+  CREATE TABLE qrtz_locks (
+  SCHED_NAME varchar2(120) NOT NULL,
+  LOCK_NAME varchar2(40) NOT NULL,
+  PRIMARY KEY (SCHED_NAME,LOCK_NAME)
+)
+
+INSERT INTO qrtz_locks VALUES ('RenrenScheduler', 'STATE_ACCESS');
+INSERT INTO qrtz_locks VALUES ('RenrenScheduler', 'TRIGGER_ACCESS');
+
+
+CREATE TABLE qrtz_paused_trigger_grps (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_GROUP)
+)
+
+
+CREATE TABLE qrtz_scheduler_state (
+  SCHED_NAME varchar2(120) NOT NULL,
+  INSTANCE_NAME varchar2(200) NOT NULL,
+  LAST_CHECKIN_TIME number(13) NOT NULL,
+  CHECKIN_INTERVAL number(13) NOT NULL,
+  PRIMARY KEY (SCHED_NAME,INSTANCE_NAME)
+)
+
+INSERT INTO qrtz_scheduler_state VALUES ('RenrenScheduler', 'DESKTOP-VHIE3R81544586008165', '1544608585894', '15000');
+
+
+
+CREATE TABLE qrtz_simple_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  REPEAT_COUNT number(7) NOT NULL,
+  REPEAT_INTERVAL number(12) NOT NULL,
+  TIMES_TRIGGERED number(10) NOT NULL,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+  CONSTRAINT qrtz_simple_triggers_ibfk_1 FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+)
+
+CREATE TABLE qrtz_simprop_triggers (
+  SCHED_NAME varchar2(120) NOT NULL,
+  TRIGGER_NAME varchar2(200) NOT NULL,
+  TRIGGER_GROUP varchar2(200) NOT NULL,
+  STR_PROP_1 varchar2(512) DEFAULT NULL,
+  STR_PROP_2 varchar2(512) DEFAULT NULL,
+  STR_PROP_3 varchar2(512) DEFAULT NULL,
+  INT_PROP_1 number(11) DEFAULT NULL,
+  INT_PROP_2 number(11) DEFAULT NULL,
+  LONG_PROP_1 number(20) DEFAULT NULL,
+  LONG_PROP_2 number(20) DEFAULT NULL,
+  DEC_PROP_1 decimal(13,4) DEFAULT NULL,
+  DEC_PROP_2 decimal(13,4) DEFAULT NULL,
+  BOOL_PROP_1 varchar2(1) DEFAULT NULL,
+  BOOL_PROP_2 varchar2(1) DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
+  CONSTRAINT qrtz_simprop_triggers_ibfk_1 FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+)
+
+
+CREATE TABLE schedule_job (
+  job_id number(20) NOT NULL,
+  bean_name varchar(200) DEFAULT NULL  ,
+  method_name varchar(100) DEFAULT NULL  ,
+  params varchar(2000) DEFAULT NULL  ,
+  cron_expression varchar(100) DEFAULT NULL  ,
+  status integer DEFAULT NULL  ,
+  remark varchar(255) DEFAULT NULL  ,
+  create_time date DEFAULT NULL  ,
+  PRIMARY KEY (job_id)
+);
+create sequence seq_schedule_job;
+comment on table schedule_job is '定时任务';
+COMMENT on column schedule_job.job_id is '任务id';
+COMMENT on column schedule_job.bean_name is  'spring bean名称';
+COMMENT on column schedule_job.method_name is  '方法名';
+COMMENT on column schedule_job.params is '参数';
+COMMENT on column schedule_job.cron_expression is  'cron表达式';
+COMMENT on column schedule_job.status is '任务状态  0：正常  1：暂停';
+COMMENT on column schedule_job.remark is '备注';
+COMMENT on column schedule_job.create_time is '创建时间';
+
+INSERT INTO schedule_job VALUES ('1', 'testTask', 'test', 'cityfire', '0 0/30 * * * ?', '0', '有参数测试', to_date('2016-12-01 23:16:46','YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO schedule_job VALUES ('2', 'testTask', 'test2', null, '0 0/30 * * * ?', '1', '无参数测试', to_date('2016-12-03 14:55:56','YYYY-MM-DD HH24:MI:SS'));
+INSERT INTO schedule_job VALUES ('4', 'hu', 'test', 'hu', '0 0/30 * * * ?', '0', null, to_date('2019-01-10 17:01:58','YYYY-MM-DD HH24:MI:SS'));
+
+
+CREATE TABLE schedule_job_log (
+  log_id NUMBER(20) NOT NULL ,
+  job_id NUMBER(20) NOT NULL,
+  bean_name varchar(200) DEFAULT NULL  ,
+  method_name varchar(100) DEFAULT NULL  ,
+  params varchar(2000) DEFAULT NULL  ,
+  status INTEGER NOT NULL  ,
+  error varchar(2000) DEFAULT NULL  ,
+  times NUMBER(11) NOT NULL  ,
+  create_time date DEFAULT NULL  ,
+  PRIMARY KEY (log_id)
+);
+create sequence seq_schedule_job_log;
+CREATE INDEX  job_id ON schedule_job_log(job_id);
+comment on table schedule_job_log is '定时任务日志';
+COMMENT ON COLUMN schedule_job_log.log_id IS '任务日志id';
+COMMENT ON COLUMN schedule_job_log.job_id IS  '任务id';
+COMMENT ON COLUMN schedule_job_log.bean_name IS  'spring bean名称';
+COMMENT ON COLUMN schedule_job_log.method_name IS '方法名';
+COMMENT ON COLUMN schedule_job_log.params IS '参数';
+COMMENT ON COLUMN schedule_job_log.status IS '任务状态    0：成功    1：失败';
+COMMENT ON COLUMN schedule_job_log.error IS '失败信息';
+COMMENT ON COLUMN schedule_job_log.times IS '耗时(单位：毫秒)';
+COMMENT ON COLUMN schedule_job_log.create_time IS '创建时间';
+
+create table park_config(
+     park_id number(4) primary key,
+     tccbh  varchar2(18) unique not null,
+     tcwz  varchar2(64) not null,
+     imgbasepath varchar2(64) not null,
+     dbflag number(1) not null,
+     dbname varchar2(16),
+     driver varchar2(64),
+     url  varchar2(128),
+     username varchar2(32),
+     password varchar2(32),
+     create_time date  not null,
+     remark varchar2(128)
+ )
+comment on table park_config is '停车场配置信息表';
+COMMENT ON COLUMN park_config.park_id IS 'id';
+COMMENT ON COLUMN park_config.tccbh IS '停车场编号';
+COMMENT ON COLUMN park_config.tcwz IS '停车场位置';
+COMMENT ON COLUMN park_config.imgbasepath IS '停车场图片存放根目录';
+COMMENT ON COLUMN park_config.dbflag IS  '数据源是否启用  1:启用,0:禁用';
+COMMENT ON COLUMN park_config.dbname IS  '数据库名';
+COMMENT ON COLUMN park_config.driver IS  '数据库连接驱动名';
+COMMENT ON COLUMN park_config.url IS '数据库连接地址';
+COMMENT ON COLUMN park_config.username IS '数据库用户名';
+COMMENT ON COLUMN park_config.password IS '数据库密码';
+COMMENT ON COLUMN park_config.create_time IS '创建时间';
+COMMENT ON COLUMN park_config.remark IS '备注';

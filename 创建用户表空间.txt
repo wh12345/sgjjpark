@@ -1,0 +1,7 @@
+create tablespace sgjjpark     
+datafile  'D:\app\Becauseofyou\oradata\sgjjpark.dbf'  
+size 1024m  
+autoextend on  next 32m maxsize 2048m;
+create user park_admin identified by oracleadmin profile default default tablespace sgjjpark account unlock;
+grant connect,resource to park_admin;
+grant create session to park_admin
